@@ -185,8 +185,10 @@ can safely be called at any time."
         (keyvar (make-symbol "key"))
         (kmapvar (make-symbol "kmap"))
         (kdescvar (make-symbol "kdesc"))
-        (bindingvar (make-symbol "binding")))
-    `(let* ((,namevar ,key-name)
+        (bindingvar (make-symbol "binding"))
+        (commandvar (make-symbol "command")))
+    `(let* ((,commandvar ,command)
+            (,namevar ,key-name)
             (,keyvar ,(if (stringp key-name) (read-kbd-macro key-name)
                         `(if (vectorp ,namevar) ,namevar
                            (read-kbd-macro ,namevar))))
@@ -198,7 +200,7 @@ can safely be called at any time."
                              (if (symbolp ,keymap) ,keymap (quote ,keymap))))
             (,bindingvar (lookup-key ,kmapvar ,keyvar)))
        (let ((entry (assoc ,kdescvar personal-keybindings))
-             (details (list ,command
+             (details (list ,commandvar
                             (unless (numberp ,bindingvar)
                               ,bindingvar))))
          (if entry
@@ -208,8 +210,8 @@ can safely be called at any time."
             `(define-key ,kmapvar ,keyvar
                '(menu-item "" nil :filter (lambda (&optional _)
                                             (when ,predicate
-                                              ,command))))
-          `(define-key ,kmapvar ,keyvar ,command)))))
+                                              ,commandvar))))
+          `(define-key ,kmapvar ,keyvar ,commandvar)))))
 
 ;;;###autoload
 (defmacro unbind-key (key-name &optional keymap)
